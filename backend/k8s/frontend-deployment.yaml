@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1                          # Arranca con 1, hpa-frontend puede escalar según demanda
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend                   # Conecta con frontend-service.yaml (type: LoadBalancer)
+    spec:
+      containers:
+        - name: frontend
+          image: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/smartlogix/frontend:latest
+          # Esta imagen es un nginx que sirve los archivos estáticos compilados de tu app
+          # Angular (build de producción: ng build → carpeta dist/)
+          ports:
+            - containerPort: 80         # nginx escucha en el puerto 80 estándar de HTTP
+          resources:
+            requests:
+              cpu: 100m                 # Mucho más liviano que los microservicios backend (200m/256Mi):
+              memory: 64Mi              # nginx solo sirve archivos estáticos, no corre lógica de negocio
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: nginx-config              # Referencia al volumen definido más abajo
+              mountPath: /etc/nginx/conf.d     # Esta es la carpeta donde nginx busca sus archivos
+                                               # de configuración de "sitios" (vhosts)
+                                               # Montar algo ACÁ reemplaza/sobreescribe lo que
+                                               # traía la imagen por defecto en esa carpeta
+      volumes:
+        - name: nginx-config                  # Mismo nombre que usa volumeMounts arriba (deben coincidir)
+          configMap:
+            name: frontend-nginx-config       # Toma el contenido del ConfigMap "frontend-nginx-config"
+                                               # y lo "monta" como archivo(s) dentro del Pod
+
+# NOTA: a diferencia de los microservicios backend, este Deployment NO tiene readinessProbe.
+# nginx arranca casi instantáneamente (no espera conexión a DB ni registro en Eureka),
+# por eso en la práctica no genera problemas, pero en un entorno más estricto
+# convendría agregar un probe simple, por ejemplo httpGet a "/" en el puerto 80.

@@ -1,0 +1,36 @@
+<div class="container-fluid p-4">
+  <h2 class="mb-4">Dashboard</h2>
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <app-dashboard-card
+        titulo="Inventario"
+        [valor]="totalInventario"
+        descripcion="Productos registrados"
+        color="bg-primary">
+      </app-dashboard-card>
+    </div>
+    <div class="col-md-4">
+      <app-dashboard-card
+        titulo="Pedidos"
+        [valor]="totalPedidos"
+        descripcion="Pedidos activos"
+        color="bg-success">
+      </app-dashboard-card>
+    </div>
+    <div class="col-md-4">
+      <app-dashboard-card
+        titulo="Envíos"
+        [valor]="totalEnvios"
+        descripcion="Envíos registrados"
+        color="bg-warning">
+      </app-dashboard-card>
+    </div>
+  </div>
+
+  <app-dashboard-table
+    titulo="Últimos Pedidos"
+    [columnas]="columnas"
+    [datos]="pedidos">
+  </app-dashboard-table>
+</div>

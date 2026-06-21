@@ -1,0 +1,158 @@
+name: Deploy Backend
+
+on:
+  workflow_dispatch:
+
+#on:
+#  push:
+#    branches: [ main, BlackDev ]
+#    paths:
+#      - 'backend/msvc-authService/**'
+#      - 'backend/msvc-config/**'
+#      - 'backend/msvc-eureka/**'
+#      - 'frontend/**'
+#      - 'backend/msvc-gateway/**'
+#    #TODO agregar ruta similar a las de arriba
+
+jobs:
+  detect-changes:
+    runs-on: self-hosted
+    outputs:
+      auth: ${{ steps.filter.outputs.auth }}
+      config: ${{ steps.filter.outputs.config }}
+      eureka: ${{ steps.filter.outputs.eureka }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      #TODO agregar ruta similar a las de arriba
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            auth:
+              - 'backend/msvc-authService/**'
+            config:
+              - 'backend/msvc-config/**'
+            eureka:
+              - 'backend/msvc-eureka/**'
+            gateway:
+            - 'backend/msvc-gateway/**'
+            frontend:
+                - 'frontend/**'
+          #TODO agregar ruta similar a las de arriba
+
+  build-config:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.config == 'true'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/msvc-config/Dockerfile
+          push: true
+          tags: lblackdev/smartlogix-config:latest
+
+  build-eureka:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.eureka == 'true'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/msvc-eureka/Dockerfile
+          push: true
+          tags: lblackdev/smartlogix-eureka:latest
+
+  build-auth:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.auth == 'true'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/msvc-authService/Dockerfile
+          push: true
+          tags: lblackdev/smartlogix-auth:latest
+
+      - name: Crear .env
+        run: |
+          echo "DATA_IP=${{ secrets.DATA_IP }}" > /home/ssm-user/smartlogix/.env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> /home/ssm-user/smartlogix/.env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> /home/ssm-user/smartlogix/.env
+          echo "DB_NAME=${{ secrets.DB_NAME_AUTH }}" >> /home/ssm-user/smartlogix/.env
+
+      - name: Deploy contenedor
+        run: |
+          cd /home/ssm-user/smartlogix
+          docker-compose up -d msvc-auth
+
+          #TODO agregar ruta similar a las de arriba por ejemplo el build-auth
+          #TODO repo faltantes por subir al dockerhub
+          #smartlogix-envio
+          #smartlogix-pedido
+          #smartlogix-inventario
+          
+
+  build-gateway:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.gateway == 'true'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/msvc-gateway/Dockerfile
+          push: true
+          tags: lblackdev/smartlogix-gateway:latest
+
+  build-frontend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: lblackdev/smartlogix-frontend:latest
+      - name: Deploy frontend
+        run: |
+          sudo docker stop smartlogix-frontend || true
+          sudo docker rm smartlogix-frontend || true
+          sudo docker pull lblackdev/smartlogix-frontend:latest
+          sudo docker run -d \
+            --name smartlogix-frontend \
+            -p 80:80 \
+            --restart unless-stopped \
+            lblackdev/smartlogix-frontend:latest
+

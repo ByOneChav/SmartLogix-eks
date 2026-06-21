@@ -1,0 +1,186 @@
+name: Deploy to EKS
+
+# Se ejecuta con push a main O manualmente
+on:
+  push:
+    branches: [ AlcindoDev ]
+  workflow_dispatch:      # botón manual en GitHub para ejecutar cuando quieras
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER: smartlogix-cluster
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+
+jobs:
+  # ============================================
+  # JOB 1: Build de imágenes y push a ECR
+  # ============================================
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service: msvc-config
+            context: ./backend
+            dockerfile: ./backend/msvc-config/Dockerfile
+          - service: msvc-eureka
+            context: ./backend
+            dockerfile: ./backend/msvc-eureka/Dockerfile
+          - service: msvc-authservice
+            context: ./backend
+            dockerfile: ./backend/msvc-authService/Dockerfile
+          - service: msvc-pedido
+            context: ./backend
+            dockerfile: ./backend/msvc-pedido/Dockerfile
+          - service: msvc-inventario
+            context: ./backend
+            dockerfile: ./backend/msvc-inventario/Dockerfile
+          - service: msvc-envio
+            context: ./backend
+            dockerfile: ./backend/msvc-envio/Dockerfile
+          - service: msvc-gateway
+            context: ./backend
+            dockerfile: ./backend/msvc-gateway/Dockerfile
+          - service: frontend
+            context: ./frontend
+            dockerfile: ./frontend/Dockerfile
+
+    steps:
+      # 1. Descarga el código del repo
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      # 2. Configura credenciales de AWS
+      - name: Configurar AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3. Login a ECR (como docker login pero para AWS)
+      - name: Login a Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 4. Build y push de la imagen
+      - name: Build y Push imagen
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/smartlogix/${{ matrix.service }}:latest
+            ${{ env.ECR_REGISTRY }}/smartlogix/${{ matrix.service }}:${{ github.sha }}
+
+  # ============================================
+  # JOB 2: Deploy a EKS
+  # ============================================
+  deploy:
+    needs: build-and-push       # espera a que todas las imágenes se suban
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Conectar kubectl al clúster EKS
+      - name: Configurar kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      # Reemplazar <ACCOUNT_ID> en los manifiestos con el valor real
+      - name: Actualizar manifiestos con Account ID
+        run: |
+          sed -i "s|<ACCOUNT_ID>|${{ secrets.AWS_ACCOUNT_ID }}|g" backend/k8s/*.yaml
+
+      # Aplicar manifiestos en orden
+      - name: Deploy PostgreSQL
+        run: |
+          kubectl apply -f backend/k8s/postgres-secret.yaml
+          kubectl apply -f backend/k8s/postgres-init-configmap.yaml
+          kubectl apply -f backend/k8s/postgres-deployment.yaml
+          kubectl apply -f backend/k8s/postgres-service.yaml
+
+      - name: Esperar PostgreSQL ready
+        run: kubectl wait --for=condition=available deployment/postgres --timeout=120s
+
+      - name: Deploy Config Server
+        run: |
+          kubectl apply -f backend/k8s/config-deployment.yaml
+          kubectl apply -f backend/k8s/config-service.yaml
+
+      - name: Esperar Config Server ready
+        run: kubectl wait --for=condition=available deployment/msvc-config --timeout=180s
+
+      - name: Deploy Eureka
+        run: |
+          kubectl apply -f backend/k8s/eureka-deployment.yaml
+          kubectl apply -f backend/k8s/eureka-service.yaml
+
+      - name: Esperar Eureka ready
+        run: kubectl wait --for=condition=available deployment/msvc-eureka --timeout=180s
+
+      - name: Deploy Microservicios
+        run: |
+          kubectl apply -f backend/k8s/app-secret.yaml
+          kubectl apply -f backend/k8s/auth-deployment.yaml
+          kubectl apply -f backend/k8s/auth-service.yaml
+          kubectl apply -f backend/k8s/pedido-deployment.yaml
+          kubectl apply -f backend/k8s/pedido-service.yaml
+          kubectl apply -f backend/k8s/inventario-deployment.yaml
+          kubectl apply -f backend/k8s/inventario-service.yaml
+          kubectl apply -f backend/k8s/envio-deployment.yaml
+          kubectl apply -f backend/k8s/envio-service.yaml
+
+      - name: Deploy Gateway
+        run: |
+          kubectl apply -f backend/k8s/gateway-deployment.yaml
+          kubectl apply -f backend/k8s/gateway-service.yaml
+
+      - name: Deploy Frontend
+        run: |
+          kubectl apply -f backend/k8s/frontend-configmap.yaml
+          kubectl apply -f backend/k8s/frontend-deployment.yaml
+          kubectl apply -f backend/k8s/frontend-service.yaml
+
+      - name: Deploy HPAs (Autoscaling)
+        run: |
+          for f in backend/k8s/hpa-*.yaml; do kubectl apply -f "$f"; done
+
+      - name: Deploy Metrics Server
+        run: kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+      # Actualizar imagen de cada deployment al commit SHA actual
+      # K8s detecta el cambio de tag y reinicia SOLO los pods que cambiaron
+      - name: Actualizar imagenes con commit SHA
+        run: |
+          kubectl set image deployment/msvc-config msvc-config=${{ env.ECR_REGISTRY }}/smartlogix/msvc-config:${{ github.sha }}
+          kubectl set image deployment/msvc-eureka msvc-eureka=${{ env.ECR_REGISTRY }}/smartlogix/msvc-eureka:${{ github.sha }}
+          kubectl set image deployment/msvc-auth msvc-auth=${{ env.ECR_REGISTRY }}/smartlogix/msvc-authservice:${{ github.sha }}
+          kubectl set image deployment/msvc-pedido msvc-pedido=${{ env.ECR_REGISTRY }}/smartlogix/msvc-pedido:${{ github.sha }}
+          kubectl set image deployment/msvc-inventario msvc-inventario=${{ env.ECR_REGISTRY }}/smartlogix/msvc-inventario:${{ github.sha }}
+          kubectl set image deployment/msvc-envio msvc-envio=${{ env.ECR_REGISTRY }}/smartlogix/msvc-envio:${{ github.sha }}
+          kubectl set image deployment/msvc-gateway msvc-gateway=${{ env.ECR_REGISTRY }}/smartlogix/msvc-gateway:${{ github.sha }}
+          kubectl set image deployment/frontend frontend=${{ env.ECR_REGISTRY }}/smartlogix/frontend:${{ github.sha }}
+
+      # Verificación final
+      - name: Verificar despliegue
+        run: |
+          echo "=== PODS ==="
+          kubectl get pods
+          echo "=== SERVICES ==="
+          kubectl get svc
+          echo "=== HPA ==="
+          kubectl get hpa
+          echo "=== FRONTEND URL ==="
+          kubectl get svc frontend -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+          

@@ -1,0 +1,41 @@
+.card {
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(11, 20, 72, 0.10);
+  overflow: hidden;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #0B1448, #1e3c72);
+  color: #F4F7FF;
+  padding: 14px 20px;
+  font-size: 0.95rem;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4a5568;
+  font-weight: 700;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 12px 14px;
+}
+
+.table td {
+  padding: 11px 14px;
+  font-size: 0.85rem;
+  color: #2d3748;
+  vertical-align: middle;
+}
+
+.badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: msvc-envio                # DNS interno: el Gateway llama a http://msvc-envio:8084
+spec:
+  selector:
+    app: msvc-envio                # Enruta a los Pods del Deployment con esa etiqueta
+  ports:
+    - port: 8084
+      targetPort: 8084
+  type: ClusterIP                  # Solo interno — el frontend nunca habla directo con envio,
+                                   # siempre pasa por el Gateway

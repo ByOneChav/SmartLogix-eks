@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: msvc-gateway               # DNS interno: http://msvc-gateway:8080
+                                   # Este es EXACTAMENTE el nombre que usa nginx en
+                                   # frontend-configmap.yaml (proxy_pass http://msvc-gateway:8080)
+spec:
+  selector:
+    app: msvc-gateway               # Enruta a los Pods del Deployment con esa etiqueta
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP                  # Interno — el Gateway NO tiene LoadBalancer propio.
+                                   # Solo es alcanzable desde dentro del cluster (por nginx/frontend)

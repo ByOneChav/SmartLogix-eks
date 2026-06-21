@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service                  # Crea una "puerta de entrada" estable (IP y nombre DNS fijos) hacia un grupo de Pods
+metadata:
+  name: msvc-auth               # Nombre del Service. Otros Pods lo llaman por DNS interno: http://msvc-auth:8081
+spec:
+  selector:
+    app: msvc-auth               # Enruta tráfico a TODOS los Pods con la etiqueta app: msvc-auth
+                                  # (es decir, a los Pods creados por auth-deployment.yaml)
+  ports:
+    - port: 8081                 # Puerto que expone el Service hacia el resto del cluster
+      targetPort: 8081           # Puerto al que reenvía dentro del Pod (debe coincidir con containerPort)
+  type: ClusterIP                # Solo accesible DENTRO del cluster, no desde internet
+                                  # (compará con "frontend", que usa LoadBalancer para ser público)

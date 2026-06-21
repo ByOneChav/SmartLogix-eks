@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: msvc-eureka                # DNS interno: http://msvc-eureka:8761
+spec:
+  selector:
+    app: msvc-eureka                # Enruta a los Pods del Deployment con esa etiqueta
+  ports:
+    - port: 8761
+      targetPort: 8761
+  type: ClusterIP                  # Solo accesible dentro del cluster — nada externo necesita
+                                   # hablarle directo a Eureka (aunque si quisieras ver el
+                                   # dashboard desde tu navegador, necesitarías un port-forward
+                                   # o cambiar esto a LoadBalancer temporalmente)

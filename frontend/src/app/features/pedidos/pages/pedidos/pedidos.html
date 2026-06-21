@@ -1,0 +1,147 @@
+<div class="page-header">
+  <h1>Gestión de Pedidos</h1>
+  <p>Crea pedidos con validación automática de stock en inventario</p>
+</div>
+
+<div class="page-container">
+
+  <!-- FORMULARIO -->
+  <div class="card form-card">
+    <h2 class="card-title">Nuevo Pedido</h2>
+
+    @if (error) {
+      <div class="alert-error">{{ error }}</div>
+    }
+    @if (success) {
+      <div class="alert-success">{{ success }}</div>
+    }
+
+    <form (ngSubmit)="crearPedido()">
+
+      <div class="form-group">
+        <label>Nombre del cliente</label>
+        <input [(ngModel)]="nuevo.clienteNombre" name="clienteNombre"
+               placeholder="Ej: María González" required>
+      </div>
+
+      <div class="form-group">
+        <label>Producto (Inventario)</label>
+        <select [(ngModel)]="nuevo.inventarioId" name="inventarioId"
+                (ngModelChange)="onInventarioChange()" required>
+          <option [ngValue]="0" disabled>Selecciona un producto</option>
+          @for (inv of inventarios; track inv.id) {
+            <option [ngValue]="inv.id">
+              {{ inv.nombreProducto }} — Stock: {{ inv.stock }}
+            </option>
+          }
+        </select>
+      </div>
+
+      @if (inventarioSeleccionado) {
+        <div class="producto-info">
+          <div class="info-item">
+            <span class="info-label">Precio unitario</span>
+            <span class="info-value">${{ inventarioSeleccionado.precio | number:'1.0-0' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Stock disponible</span>
+            <span class="info-value" [class.text-danger]="inventarioSeleccionado.stock === 0">
+              {{ inventarioSeleccionado.stock }} unidades
+            </span>
+          </div>
+        </div>
+      }
+
+      <div class="form-group">
+        <label>Descripción</label>
+        <input [(ngModel)]="nuevo.descripcion" name="descripcion"
+               placeholder="Descripción del pedido" required>
+      </div>
+
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input [(ngModel)]="nuevo.cantidad" name="cantidad"
+               type="number" min="1"
+               [max]="inventarioSeleccionado?.stock || 9999"
+               (ngModelChange)="onCantidadChange()" required>
+      </div>
+
+      @if (nuevo.precio && nuevo.precio > 0) {
+        <div class="precio-total">
+          <span>Total estimado</span>
+          <strong>${{ nuevo.precio | number:'1.0-0' }}</strong>
+        </div>
+      }
+
+      <button type="submit" class="btn-primary"
+              [disabled]="loading || nuevo.inventarioId === 0">
+        {{ loading ? 'Procesando...' : 'Crear Pedido' }}
+      </button>
+
+    </form>
+  </div>
+
+  <!-- TABLA -->
+  <div class="card table-card">
+    <h2 class="card-title">
+      Lista de Pedidos
+      <span class="total-badge">{{ pedidos.length }}</span>
+    </h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Descripción</th>
+            <th>Cant.</th>
+            <th>Precio</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (cargandoLista) {
+            <tr>
+              <td colspan="8" class="td-loading">Cargando pedidos...</td>
+            </tr>
+          } @else {
+            @for (item of pedidos; track item.id) {
+              <tr>
+                <td>{{ item.id }}</td>
+                <td class="td-bold">{{ item.clienteNombre }}</td>
+                <td>{{ item.descripcion }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>${{ item.precio | number:'1.0-0' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getBadgeClass(item.estado)">
+                    {{ item.estado }}
+                  </span>
+                </td>
+                <td class="td-fecha">{{ item.fechaPedido | date:'dd/MM/yy HH:mm' }}</td>
+                <td class="td-acciones">
+                  @if (puedeAvanzar(item.estado)) {
+                    <button class="btn-avanzar" (click)="avanzarEstado(item)">
+                      {{ getSiguienteLabel(item.estado) }}
+                    </button>
+                  }
+                  @if (puedeCancelar(item.estado)) {
+                    <button class="btn-cancelar" (click)="cancelarPedido(item)">Cancelar</button>
+                  }
+                  <button class="btn-del" (click)="eliminar(item.id!)">✕</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="td-empty">No hay pedidos registrados</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

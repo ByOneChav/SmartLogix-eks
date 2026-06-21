@@ -1,0 +1,122 @@
+<div class="page-header">
+  <h1>Gestión de Envíos</h1>
+  <p>Gestiona el despacho y seguimiento de pedidos confirmados</p>
+</div>
+
+<div class="page-container">
+
+  <!-- FORMULARIO -->
+  <div class="card form-card">
+    <h2 class="card-title">Nuevo Envío</h2>
+
+    @if (error) {
+      <div class="alert-error">{{ error }}</div>
+    }
+    @if (success) {
+      <div class="alert-success">{{ success }}</div>
+    }
+
+    <form (ngSubmit)="crearEnvio()">
+
+      <div class="form-group">
+        <label>Pedido a despachar</label>
+        <select [(ngModel)]="nuevo.pedidoId" name="pedidoId" required>
+          <option [value]="0" disabled>Selecciona un pedido</option>
+          @for (p of pedidosDisponibles; track p.id) {
+            <option [value]="p.id">
+              #{{ p.id }} — {{ p.clienteNombre }} ({{ p.estado }})
+            </option>
+          }
+        </select>
+        @if (pedidosDisponibles.length === 0) {
+          <small class="hint">No hay pedidos CONFIRMADOS o EN_PREPARACION disponibles</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Dirección de destino</label>
+        <input [(ngModel)]="nuevo.direccionDestino" name="direccionDestino"
+               placeholder="Ej: Av. Providencia 1234, Santiago" required>
+      </div>
+
+      <button type="submit" class="btn-primary"
+              [disabled]="loading || nuevo.pedidoId === 0">
+        {{ loading ? 'Procesando...' : 'Crear Envío' }}
+      </button>
+
+    </form>
+
+    <div class="flujo-info">
+      <h4>Flujo de estados</h4>
+      <div class="flujo-steps">
+        <span class="badge badge-orange">PREPARANDO</span>
+        <span class="arrow">→</span>
+        <span class="badge badge-info">EN_TRANSITO</span>
+        <span class="arrow">→</span>
+        <span class="badge badge-success">ENTREGADO</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="card table-card">
+    <h2 class="card-title">
+      Lista de Envíos
+      <span class="total-badge">{{ envios.length }}</span>
+    </h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pedido</th>
+            <th>Dirección Destino</th>
+            <th>Estado</th>
+            <th>Fecha Envío</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (cargandoLista) {
+            <tr>
+              <td colspan="6" class="td-loading">Cargando envíos...</td>
+            </tr>
+          } @else {
+            @for (item of envios; track item.id) {
+              <tr>
+                <td>{{ item.id }}</td>
+                <td>
+                  <span class="pedido-ref">#{{ item.pedidoId }}</span>
+                </td>
+                <td class="td-direccion">{{ item.direccionDestino }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getBadgeClass(item.estado)">
+                    {{ item.estado }}
+                  </span>
+                </td>
+                <td class="td-fecha">{{ item.fechaEnvio | date:'dd/MM/yy HH:mm' }}</td>
+                <td class="td-acciones">
+                  @if (puedeAvanzar(item.estado)) {
+                    <button class="btn-avanzar" (click)="avanzarEstado(item)">
+                      {{ getSiguienteLabel(item.estado) }}
+                    </button>
+                  }
+                  @if (puedeDevolver(item.estado)) {
+                    <button class="btn-devolver" (click)="devolverEnvio(item)">Devolver</button>
+                  }
+                  <button class="btn-del" (click)="eliminar(item.id!)">✕</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="td-empty">No hay envíos registrados</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

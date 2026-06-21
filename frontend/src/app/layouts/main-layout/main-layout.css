@@ -1,0 +1,81 @@
+.sidenav-container {
+    height: 100vh;
+}
+
+.sidenav {
+    width: 240px;
+    background-color: #0B1448;
+    color: #A8B3E6;
+    display: flex;
+    flex-direction: column;
+}
+
+.logout-container {
+    margin-top: auto;
+    padding: 16px;
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 10px;
+    background: none;
+    border: 1px solid rgba(255,45,170, 0.3);
+    border-radius: 15px;
+    color: #FF2DAA;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: rgba(255,45,170, 0.15);
+    cursor: pointer;
+}
+
+::ng-deep .sidenav .mat-mdc-list-item .mdc-list-item__primary-text {
+    color: #A8B3E6 !important;
+}
+
+::ng-deep .sidenav .mat-mdc-list-item:hover .mdc-list-item__primary-text {
+    background-color: rgba(255, 45, 170, 0.15) !important;
+    color: #FF2DAA !important;
+}
+
+::ng-deep .sidenav .active-link .mdc-list-item__primary-text {
+    background-color: rgba(255, 45, 170, 0.2) !important;
+    color: #FF2DAA !important;
+    padding: 12px 3rem 12px 6px;
+    /*padding-right: 2rem;*/
+    border-radius: 30px;
+}
+
+.content {
+    padding: 24px;
+    background-color: #f0f2f8;
+}
+
+.user-info {
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(168, 179, 230, 0.15);
+}
+
+.user-name {
+    color: #FF2DAA;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.user-role {
+    color: #6B7AB3;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sidenav-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}

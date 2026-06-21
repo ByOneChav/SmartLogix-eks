@@ -1,0 +1,12 @@
+/* ============================
+   DASHBOARD PAGE
+   ============================ */
+.container-fluid {
+  max-width: 1200px;
+}
+
+h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0B1448;
+}

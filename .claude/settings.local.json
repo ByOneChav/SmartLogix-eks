@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -f frontend/src/app/features/inventario/inventario.ts frontend/src/app/features/inventario/inventario.css frontend/src/app/features/inventario/inventario-routing-module.ts frontend/src/app/features/inventario/inventario.service.ts frontend/src/app/features/pedidos/pedidos.ts frontend/src/app/features/pedidos/pedidos.html frontend/src/app/features/pedidos/pedidos.css frontend/src/app/features/pedidos/pedidos.spec.ts frontend/src/app/features/pedidos/pedidos-module.ts frontend/src/app/features/pedidos/pedidos-routing-module.ts frontend/src/app/core/models/inventario.ts frontend/src/app/core/models/pedidos.ts frontend/src/app/core/models/envios.ts)",
+      "Bash(rm -rf \"frontend/src/app/feactures\")",
+      "Bash(npx ng *)",
+      "Bash(pip install *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python *)",
+      "Bash(grep \"password:\" backend/msvc-config/src/main/resources/configurations/msvc-*-dev.yml)"
+    ]
+  }
+}

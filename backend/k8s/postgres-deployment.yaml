@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres      # nombre del deployment
+spec:
+  replicas: 1     # solo 1 replica — PostgreSQL no escala horizontalmente fácil
+  selector:
+    matchLabels:
+      app: postgres  # busca pods con esta etiqueta
+  template:         # plantilla para crear los pods
+    metadata:
+      labels:
+        app: postgres  # etiqueta del pod — debe coincidir con selector
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine    # imagen oficial, alpine = liviana (~80MB)
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-secret   # inyecta POSTGRES_USER y POSTGRES_PASSWORD como env vars archivo secret
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d   # PostgreSQL ejecuta todo .sql aquí al arrancar
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+        - name: init-script
+          configMap:
+            name: postgres-init        # monta el ConfigMap como archivo
+

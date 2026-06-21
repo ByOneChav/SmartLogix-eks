@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msvc-eureka
+spec:
+  replicas: 1                          # 1 sola instancia. Eureka Server normalmente se replica en
+                                        # clusters cuando hay alta disponibilidad real, pero para
+                                        # este proyecto (y como pasa con config) no necesita HPA:
+                                        # no recibe tráfico de usuarios, solo "registros" puntuales
+                                        # de los demás microservicios al arrancar
+  selector:
+    matchLabels:
+      app: msvc-eureka
+  template:
+    metadata:
+      labels:
+        app: msvc-eureka                # Conecta este Deployment con eureka-service.yaml
+    spec:
+      containers:
+        - name: msvc-eureka
+          image: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/smartlogix/msvc-eureka:latest
+          ports:
+            - containerPort: 8761       # Puerto estándar de Eureka Server (también es el puerto
+                                        # de su dashboard web, donde se ve qué servicios están registrados)
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"
+            - name: CONFIG_SERVER_URL
+              value: "http://msvc-config:8888"
+              # Igual que el resto: Eureka también obtiene su configuración del Config Server
+              # (por eso en deploy-eks.yml el orden es: 1) Config Server, 2) Eureka, 3) resto de microservicios
+              # → cada capa depende de la anterior)
+
+          # NOTA: comparado con msvc-auth/msvc-envio, este Deployment NO tiene:
+          #   - DB_PASSWORD → Eureka no se conecta a ninguna base de datos, solo mantiene
+          #     en memoria un registro de "quién está vivo y dónde"
+          #   - bloque "resources" → igual que config-deployment, sin requests/limits
+          #     definidos (y por eso tampoco tiene HPA asociado)
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 30    # 30s (igual que config, menos que los 40s de los microservicios
+                                        # de negocio) — Eureka Server arranca relativamente rápido,
+                                        # no tiene que esperar conexión a DB
+            periodSeconds: 10

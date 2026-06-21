@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: msvc-config               # Nombre DNS interno. Por esto en auth-deployment.yaml vimos:
+                                   # CONFIG_SERVER_URL = "http://msvc-config:8888"
+spec:
+  selector:
+    app: msvc-config               # Enruta tráfico a los Pods creados por config-deployment.yaml
+                                   # (los que tienen la etiqueta app: msvc-config)
+  ports:
+    - port: 8888                   # Puerto que expone el Service hacia el resto del cluster
+      targetPort: 8888             # Puerto al que reenvía dentro del Pod (coincide con containerPort)
+  type: ClusterIP                  # Solo accesible dentro del cluster — ningún cliente externo
+                                   # necesita hablar directo con el Config Server

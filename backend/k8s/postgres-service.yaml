@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres                # este nombre se convierte en DNS dentro del clúster
+spec:
+  selector:
+    app: postgres               # enruta tráfico a pods con esta etiqueta
+  ports:
+    - port: 5432                # puerto del servicio
+      targetPort: 5432          # puerto del contenedor
+  type: ClusterIP               # solo accesible DENTRO del clúster, no desde internet

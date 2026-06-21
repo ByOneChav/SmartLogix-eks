@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msvc-config
+spec:
+  replicas: 1                          # 1 réplica fija — el Config Server es "stateless" pero no crítico en términos de carga:
+                                        # los demás servicios lo consultan SOLO al arrancar (para bajar su configuración),
+                                        # no en cada request, así que no necesita escalar ni tener HPA
+  selector:
+    matchLabels:
+      app: msvc-config                  # El Deployment administra los Pods con esta etiqueta
+  template:
+    metadata:
+      labels:
+        app: msvc-config                # Etiqueta del Pod — debe coincidir con matchLabels y con el selector del Service
+    spec:
+      containers:
+        - name: msvc-config
+          image: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/smartlogix/msvc-config:latest
+          # Igual que en auth: <ACCOUNT_ID> lo reemplaza el workflow con tu cuenta real de AWS
+          ports:
+            - containerPort: 8888       # Puerto estándar de Spring Cloud Config Server
+          readinessProbe:                # K8s usa esto para saber cuándo el Pod está listo para recibir tráfico
+            httpGet:
+              path: /actuator/health     # Endpoint de Actuator que indica si la app levantó OK
+              port: 8888
+            initialDelaySeconds: 30      # Espera 30s antes del primer chequeo (tiempo de arranque de Spring Boot)
+            periodSeconds: 10            # Después, chequea cada 10s
+
+          # NOTA: a diferencia de msvc-auth, este Deployment NO tiene:
+          #   - bloque "env" → no necesita variables externas, su configuración
+          #     probablemente está embebida en la imagen (archivos application.yml
+          #     o un repo Git que Spring Cloud Config lee internamente)
+          #   - bloque "resources" → no se definieron requests/limits de CPU/memoria.
+          #     Esto significa que k8s no reserva nada específico para este Pod
+          #     (puede ser un punto a mejorar: sin "requests", el Scheduler no tiene
+          #     garantía de que el nodo tenga espacio, y no podría tener HPA aunque quisiera,
+          #     porque HPA necesita un "requests.cpu" como base de cálculo)

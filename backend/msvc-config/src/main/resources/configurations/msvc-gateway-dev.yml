@@ -1,0 +1,32 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: authService
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/auth/**
+            - id: pedido
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/pedido/**
+            - id: inventario
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/inventario/**
+            - id: envio
+              uri: http://localhost:8084
+              predicates:
+                - Path=/api/envio/**
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+app:
+  cors:
+    allowed-origins: "http://localhost:4200,http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:8083,http://localhost:8084"

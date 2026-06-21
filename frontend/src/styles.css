@@ -1,0 +1,73 @@
+/* SmartLogix — Global Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Outfit', 'Roboto', sans-serif;
+  background-color: #f0f2f8;
+  color: #1a202c;
+}
+
+a {
+  color: #FF2DAA;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #d6258f;
+}
+
+/* Bootstrap form-control dark theme override for login/register */
+.login-wrapper .form-control {
+  background-color: rgba(10, 15, 50, 0.6);
+  border: 1px solid #1E2F8A;
+  color: #F4F7FF;
+}
+
+.login-wrapper .form-control::placeholder {
+  color: rgba(244, 247, 255, 0.35);
+}
+
+.login-wrapper .form-control:focus {
+  background-color: rgba(10, 15, 50, 0.8);
+  border-color: #FF2DAA;
+  box-shadow: 0 0 0 0.2rem rgba(255, 45, 170, 0.15);
+  color: #F4F7FF;
+}
+
+.login-wrapper .form-check-input {
+  background-color: rgba(10, 15, 50, 0.6);
+  border-color: #1E2F8A;
+}
+
+.login-wrapper .form-check-label {
+  color: rgba(244, 247, 255, 0.6);
+}
+
+.login-wrapper .btn-success {
+  background: linear-gradient(135deg, #FF2DAA, #a020f0);
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.login-wrapper .btn-success:hover {
+  opacity: 0.9;
+}
+
+.login-wrapper .card-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(30, 47, 138, 0.4);
+}
+
+.login-wrapper .card-footer {
+  background: transparent;
+  border-top: 1px solid rgba(30, 47, 138, 0.4);
+}

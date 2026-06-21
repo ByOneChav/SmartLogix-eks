@@ -1,0 +1,48 @@
+#server:
+#  port: 8080
+#
+#
+#spring:
+#  application:
+#    name: msvc-gateway
+#  cloud:
+#    gateway:
+#      discovery:
+#        locator:
+#          enabled: true
+#      routes:
+#        - id: authService
+#          uri: http://msvc-auth:8081
+#          predicates:
+#            - Path=/api/auth/**
+#        - id: pedido
+#          uri: http://localhost:8082  #PENDIENTE
+#          predicates:
+#            - Path=/api/pedido/**
+#        - id: inventario
+#          uri: http://localhost:8083  #PENDIENTE
+#          predicates:
+#            - Path=/api/inventario/**
+#        - id: envio
+#          uri: http://localhost:8084  #PENDIENTE
+#          predicates:
+#            - Path=/api/envio/**
+#
+#eureka:
+#  client:
+#    register-with-eureka: true
+#    service-url:
+#      defaultZone: http://msvc-eureka:8761/eureka
+
+#REFACTORIZACION PERFILAMIENTO
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true

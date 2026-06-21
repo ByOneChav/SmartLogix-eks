@@ -1,0 +1,26 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: authService
+          uri: http://msvc-auth:8081
+          predicates:
+            - Path=/api/auth/**
+        - id: pedido
+          uri: http://msvc-pedido:8082
+          predicates:
+            - Path=/api/pedido/**
+        - id: inventario
+          uri: http://msvc-inventario:8083
+          predicates:
+            - Path=/api/inventario/**
+        - id: envio
+          uri: http://msvc-envio:8084
+          predicates:
+            - Path=/api/envio/**
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://msvc-eureka:8761/eureka

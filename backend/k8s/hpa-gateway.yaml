@@ -1,0 +1,18 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: msvc-gateway            # ¿a qué deployment escala?
+  minReplicas: 1                   # mínimo 1 pod
+  maxReplicas: 3                   # máximo 3 pods
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50   # si el CPU promedio pasa de 50%, crea otro pod

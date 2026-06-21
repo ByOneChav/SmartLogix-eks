@@ -1,0 +1,60 @@
+<div class="login-wrapper d-flex align-items-center justify-content-center vh-100">
+  <div class="login-box card shadow-lg rounded-3 border-0">
+
+    <div class="card-header text-center texto-principal py-4">
+      <h3 class="mb-1 fw-bold">SmartLogix</h3>
+      <small class="texto-principal-50">Crear nueva cuenta</small>
+    </div>
+
+    <div class="card-body p-4 texto-principal">
+      <h5 class="mb-3">Registro</h5>
+
+      @if (error) {
+        <div class="alert alert-danger py-2">{{ error }}</div>
+      }
+
+      <form (ngSubmit)="register()">
+
+        <div class="mb-3">
+          <label for="name" class="form-label">Nombre completo</label>
+          <input type="text" class="form-control" id="name"
+                 [(ngModel)]="name" name="name"
+                 placeholder="Juan Pérez" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Correo electrónico</label>
+          <input type="email" class="form-control" id="email"
+                 [(ngModel)]="email" name="email"
+                 placeholder="usuario@smartlogix.cl" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Contraseña</label>
+          <input type="password" class="form-control" id="password"
+                 [(ngModel)]="password" name="password"
+                 placeholder="••••••••" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="rol" class="form-label">Rol</label>
+          <select class="form-control" id="rol" [(ngModel)]="rol" name="rol">
+            <option value="USER">Usuario</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100"
+                [disabled]="loading || !name || !email || !password">
+          {{ loading ? 'Registrando...' : 'Crear cuenta' }}
+        </button>
+
+      </form>
+    </div>
+
+    <div class="card-footer text-center py-3 texto-principal">
+      <small>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></small>
+    </div>
+
+  </div>
+</div>

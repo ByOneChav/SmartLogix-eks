@@ -1,0 +1,87 @@
+# ===============================
+
+# 🧱 Maven / Java
+
+# ===============================
+
+target/
+*.log
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven Wrapper (mantener lo necesario)
+
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+!mvnw
+!mvnw.cmd
+
+# ===============================
+
+# 💻 IDEs
+
+# ===============================
+
+# VS Code
+
+.vscode/
+
+# IntelliJ / IDEA
+
+.idea/
+*.iml
+
+# Eclipse
+
+.project
+.classpath
+.settings/
+
+# ===============================
+
+# 🖥️ Sistema Operativo
+
+# ===============================
+
+.DS_Store
+Thumbs.db
+
+# ===============================
+
+# 🔐 Archivos sensibles
+
+# ===============================
+
+.env
+*.env
+
+# ===============================
+
+# 🐳 Docker (opcional)
+
+# ===============================
+
+docker-compose.override.yml
+
+# ===============================
+
+# 📦 Archivos temporales
+
+# ===============================
+
+*.tmp
+*.swp
+
+# ===============================
+
+# 🔧 Logs de Spring Boot
+
+# ===============================
+#node moduls
+frontend/node_modules/
+
+logs/
+
+frontend/.angular/

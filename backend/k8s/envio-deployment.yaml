@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msvc-envio
+spec:
+  replicas: 1                          # Igual que auth: arranca con 1, el HPA (hpa-envio) puede escalar hasta el max definido ahí
+  selector:
+    matchLabels:
+      app: msvc-envio
+  template:
+    metadata:
+      labels:
+        app: msvc-envio                # Misma lógica: esta etiqueta conecta Deployment ↔ Service ↔ HPA
+    spec:
+      containers:
+        - name: msvc-envio
+          image: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/smartlogix/msvc-envio:latest
+          # Mismo mecanismo de placeholder <ACCOUNT_ID> que en los demás
+          ports:
+            - containerPort: 8084      # Puerto propio de msvc-envio (cada microservicio usa un puerto distinto:
+                                        # auth=8081, config=8888, eureka=8761, gateway=8080, pedido=8082, envio=8084, inventario=8083)
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"
+            - name: CONFIG_SERVER_URL
+              value: "http://msvc-config:8888"   # Igual que en auth: se conecta al Config Server al arrancar
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_PASSWORD
+            # NOTA: a diferencia de msvc-auth, este NO tiene "JWT_SECRET".
+            # Tiene sentido: msvc-envio no GENERA ni VALIDA tokens JWT directamente —
+            # esa responsabilidad es de msvc-auth (y/o el Gateway, que filtra el token
+            # antes de reenviar la petición a envio). Cada microservicio solo recibe
+            # las credenciales/secrets que REALMENTE necesita (principio de menor privilegio).
+          resources:
+            requests:
+              cpu: 200m                 # Mismos valores que auth — probablemente todos los microservicios
+              memory: 256Mi             # "estándar" comparten este perfil de recursos como base
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084                # Mismo endpoint de Actuator, en el puerto propio de este servicio
+            initialDelaySeconds: 40     # Mismo tiempo de gracia para que Spring Boot arranque
+            periodSeconds: 10

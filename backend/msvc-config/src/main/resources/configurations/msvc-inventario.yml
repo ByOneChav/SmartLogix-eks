@@ -1,0 +1,13 @@
+#REFACTORIZACION 22/04 PERFILAMIENTO
+server:
+  port: 8083
+
+spring:
+  application:
+    name: msvc-inventario
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect

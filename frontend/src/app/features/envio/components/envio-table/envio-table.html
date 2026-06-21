@@ -1,0 +1,36 @@
+<div class="card">
+    <div class="card-header fw-bold">
+        {{ titulo }}
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr>
+                @for (col of columnas; track col) {
+                    <th>{{ col }}</th>
+                }
+            </tr>
+            </thead>
+            <tbody>
+                @for (fila of datos; track fila) {
+                    <tr>
+                        @for (col of columnas; track col) {
+                            <td>
+                                @if (col === 'Estado') {
+                                    <span class="badge" [ngClass]="{
+                    'bg-success': fila[col] === 'Entregado',
+                    'bg-warning text-dark': fila[col] === 'En tránsito',
+                    'bg-primary': fila[col] === 'Preparando',
+                    'bg-danger': fila[col] === 'Cancelado'
+                  }">{{ fila[col] }}</span>
+                                } @else {
+                                    {{ fila[col] }}
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

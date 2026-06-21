@@ -1,0 +1,27 @@
+.login-wrapper {
+    background-image: url("/assets/images/fondo-login-4..png");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    background-repeat: no-repeat;
+}
+
+.login-box {
+    width: 400px;
+    background: rgb(10,15,50,.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid #1E2F8A;
+    border-radius: 20px;
+}
+
+.login-card {
+    background-color: #050A2B;
+}
+
+.texto-principal {
+    color: #F4F7FF;
+}
+
+.texto-principal-50 {
+    color: rgba(244, 247, 255, 0.5);
+}

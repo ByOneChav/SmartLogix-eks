@@ -1,0 +1,120 @@
+<div class="page-header">
+  <h1>Gestión de Inventario</h1>
+  <p>Administra productos, stock y ubicaciones del almacén</p>
+</div>
+
+<div class="page-container">
+
+  <!-- FORMULARIO -->
+  <div class="card form-card">
+    <h2 class="card-title">{{ editando ? 'Actualizar Producto' : 'Nuevo Producto' }}</h2>
+
+    @if (error) {
+      <div class="alert-error">{{ error }}</div>
+    }
+
+    <form (ngSubmit)="guardar()">
+      <div class="form-group">
+        <label>Nombre del producto</label>
+        <input [(ngModel)]="nuevo.nombreProducto" name="nombreProducto"
+               placeholder="Ej: Laptop Dell XPS 13" required>
+      </div>
+
+      <div class="form-group">
+        <label>Ubicación</label>
+        <input [(ngModel)]="nuevo.ubicacion" name="ubicacion"
+               placeholder="Ej: Bodega A - Estante 3" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Stock actual</label>
+          <input [(ngModel)]="nuevo.stock" name="stock"
+                 type="number" min="0" required>
+        </div>
+        <div class="form-group">
+          <label>Stock mínimo</label>
+          <input [(ngModel)]="nuevo.stockMinimo" name="stockMinimo"
+                 type="number" min="0" placeholder="5">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Precio unitario ($)</label>
+        <input [(ngModel)]="nuevo.precio" name="precio"
+               type="number" min="0" required>
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          {{ loading ? 'Guardando...' : (editando ? 'Actualizar' : 'Guardar Producto') }}
+        </button>
+        @if (editando) {
+          <button type="button" class="btn-secondary" (click)="cancelarEdicion()">
+            Cancelar
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+
+  <!-- TABLA -->
+  <div class="card table-card">
+    <h2 class="card-title">
+      Productos en Inventario
+      <span class="total-badge">{{ inventarios.length }} items</span>
+    </h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Producto</th>
+            <th>Ubicación</th>
+            <th>Stock</th>
+            <th>Stock Mín.</th>
+            <th>Precio Unit.</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (cargandoLista) {
+            <tr>
+              <td colspan="7" class="td-loading">Cargando productos...</td>
+            </tr>
+          } @else {
+            @for (item of inventarios; track item.id) {
+              <tr [class.row-alert]="esStockBajo(item)">
+                <td>{{ item.id }}</td>
+                <td class="td-producto">
+                  {{ item.nombreProducto }}
+                  @if (esStockBajo(item)) {
+                    <span class="alerta-stock">⚠ Stock bajo</span>
+                  }
+                </td>
+                <td>{{ item.ubicacion }}</td>
+                <td>
+                  <span class="badge" [ngClass]="esStockBajo(item) ? 'badge-danger' : 'badge-success'">
+                    {{ item.stock }}
+                  </span>
+                </td>
+                <td>{{ item.stockMinimo ?? '-' }}</td>
+                <td>${{ item.precio | number:'1.0-0' }}</td>
+                <td class="td-acciones">
+                  <button class="btn-edit" (click)="editar(item)">Editar</button>
+                  <button class="btn-delete" (click)="eliminar(item.id!)">Eliminar</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="td-empty">No hay productos registrados</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
