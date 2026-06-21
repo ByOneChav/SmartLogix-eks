@@ -3,7 +3,7 @@ name: Deploy to EKS
 # Se ejecuta con push a main O manualmente
 on:
   push:
-    branches: [ AlcindoDev ]
+    branches: [ main ]
   workflow_dispatch:      # botón manual en GitHub para ejecutar cuando quieras
 
 env:
