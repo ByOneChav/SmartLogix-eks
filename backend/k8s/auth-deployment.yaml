@@ -1,52 +1,47 @@
-apiVersion: apps/v1          # Versión de la API de k8s que maneja Deployments
-kind: Deployment              # Tipo de recurso: administra réplicas de Pods y permite actualizaciones sin downtime (rolling updates)
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: msvc-auth             # Nombre único del Deployment. El workflow lo usa en "kubectl set image deployment/msvc-auth ..."
+  name: msvc-auth
 spec:
-  replicas: 1                 # Cantidad inicial de Pods. El HPA (hpa-auth) puede subir/bajar este número automáticamente
+  replicas: 1
   selector:
     matchLabels:
-      app: msvc-auth           # El Deployment controla TODOS los Pods que tengan esta etiqueta
-  template:                     # Plantilla para crear cada Pod
+      app: msvc-auth
+  template:
     metadata:
       labels:
-        app: msvc-auth           # Etiqueta que se le pone al Pod. Debe coincidir con matchLabels arriba Y con el selector del Service
+        app: msvc-auth
     spec:
       containers:
-        - name: msvc-auth          # Nombre del contenedor dentro del Pod
+        - name: msvc-auth
           image: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/smartlogix/msvc-authservice:latest
-          # <ACCOUNT_ID> es un placeholder. El workflow lo reemplaza con tu cuenta real de AWS
-          # antes de hacer "kubectl apply" (paso "sed -i" en deploy-eks.yml)
           ports:
-            - containerPort: 8081   # Puerto en el que escucha la app Spring Boot DENTRO del contenedor
-          env:                       # Variables de entorno inyectadas al proceso Java al iniciar
+            - containerPort: 8081
+          env:
             - name: SPRING_PROFILES_ACTIVE
-              value: "k8s"           # Le dice a Spring Boot que use el perfil "k8s" (configuración pensada para correr en el cluster)
+              value: "k8s"
             - name: CONFIG_SERVER_URL
               value: "http://msvc-config:8888"
-              # "msvc-config" es el nombre DNS interno del Service del Config Server (Spring Cloud Config)
-              # msvc-auth se conecta ahí al arrancar para descargar su configuración centralizada
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: app-secret    # Lee el valor desde el Secret "app-secret"
-                  key: DB_PASSWORD    # específicamente la clave DB_PASSWORD
+                  name: app-secret
+                  key: DB_PASSWORD
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: app-secret
-                  key: JWT_SECRET     # clave que msvc-auth usa para firmar/verificar los tokens JWT de login
-          readinessProbe:             # Le dice a k8s cómo saber si el Pod ya está LISTO para recibir tráfico
+                  key: JWT_SECRET
+          readinessProbe:
             httpGet:
-              path: /actuator/health  # Endpoint de Spring Boot Actuator que reporta el estado de salud
+              path: /actuator/health
               port: 8081
-            initialDelaySeconds: 40   # Espera 40s antes del primer chequeo (Spring Boot tarda en levantar, conectar a la DB y registrarse en Eureka)
-            periodSeconds: 10         # Luego revisa cada 10s
-          resources:                  # Recursos de cómputo del contenedor
+            initialDelaySeconds: 40
+            periodSeconds: 10
+          resources: # METRICAS
             requests:
-              cpu: 200m               # Pide 0.2 vCPU — el Scheduler usa esto para decidir en qué nodo entra el Pod
-              memory: 256Mi           # Pide 256MB RAM
+              cpu: 200m          # solicita 0.2 CPU (200 milicores)
+              memory: 256Mi      # solicita 256MB RAM
             limits:
-              cpu: 500m               # Tope de CPU (si lo supera, se le aplica throttling)
-              memory: 512Mi           # Tope de memoria (si lo supera, el Pod se reinicia con OOMKilled)
-            # Estos valores son la base que usa hpa-auth.yaml para calcular el % de uso de CPU
+              cpu: 500m          # máximo 0.5 CPU
+              memory: 512Mi      # máximo 512MB

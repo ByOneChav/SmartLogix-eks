@@ -3,41 +3,28 @@ kind: Deployment
 metadata:
   name: msvc-gateway
 spec:
-  replicas: 1                          # Arranca con 1, hpa-gateway puede escalar (lo vimos en el deploy: min 1, max 3)
+  replicas: 1
   selector:
     matchLabels:
       app: msvc-gateway
   template:
     metadata:
       labels:
-        app: msvc-gateway                # Conecta con gateway-service.yaml
+        app: msvc-gateway
     spec:
       containers:
         - name: msvc-gateway
           image: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/smartlogix/msvc-gateway:latest
           ports:
-            - containerPort: 8080        # Puerto del Gateway. Coincide con lo que vimos en
-                                          # frontend-configmap.yaml: proxy_pass http://msvc-gateway:8080
+            - containerPort: 8080
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "k8s"
             - name: CONFIG_SERVER_URL
               value: "http://msvc-config:8888"
-              # Acá es donde está la "magia" que no se ve en este YAML:
-              # las REGLAS DE RUTEO (qué path va a qué microservicio) probablemente
-              # están definidas en la configuración que Spring Cloud Gateway descarga
-              # de msvc-config al arrancar (ej: /api/auth/** -> msvc-auth, /api/envios/** -> msvc-envio)
-
-          # NOTA: no tiene DB_PASSWORD (el Gateway no habla con la base de datos,
-          # solo redirige tráfico) ni JWT_SECRET (la validación/generación de tokens
-          # es responsabilidad de msvc-auth, no del Gateway en esta configuración —
-          # si tu arquitectura esperara que el Gateway VALIDE el JWT antes de
-          # redirigir, necesitaría este secret también; es un buen punto de
-          # análisis crítico para tu evaluación)
-
           resources:
             requests:
-              cpu: 200m                  # Mismo perfil "estándar" que auth/envio
+              cpu: 200m
               memory: 256Mi
             limits:
               cpu: 500m
@@ -46,5 +33,5 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 40      # Mismo tiempo de gracia que los microservicios de negocio
+            initialDelaySeconds: 40
             periodSeconds: 10

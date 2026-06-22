@@ -1,18 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend                  # Nombre del Service. El workflow lo usa en:
-                                  # "kubectl get svc frontend -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'"
-                                  # para obtener la URL pública al final del deploy
+  name: frontend
 spec:
   selector:
-    app: frontend                  # Enruta tráfico a los Pods creados por frontend-deployment.yaml
-                                  # (los que tienen la etiqueta app: frontend)
+    app: frontend
   ports:
-    - port: 80                     # Puerto que expone el LoadBalancer hacia internet
-      targetPort: 80               # Puerto al que reenvía dentro del Pod (coincide con containerPort: 80 de nginx)
-  type: LoadBalancer               # ¡Acá está la diferencia clave con TODOS los demás Services!
-                                  # EKS le pide a AWS que cree automáticamente un Network/Classic
-                                  # Load Balancer real, con una IP/DNS pública. Por eso necesitábamos
-                                  # los tags "kubernetes.io/role/elb" en las subredes públicas —
-                                  # sin eso, AWS no sabe dónde colocar ese Load Balancer.
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer

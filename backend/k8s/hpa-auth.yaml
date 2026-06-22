@@ -1,24 +1,18 @@
-apiVersion: autoscaling/v2          # Versión de la API que maneja HorizontalPodAutoscaler (v2 permite
-                                     # métricas custom/externas, no solo CPU; v1 era más limitada)
-kind: HorizontalPodAutoscaler        # Objeto que vigila un Deployment y ajusta su número de réplicas
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
 metadata:
-  name: hpa-auth                     # Nombre del HPA (lo vimos en "kubectl get hpa" del deploy)
+  name: hpa-auth
 spec:
-  scaleTargetRef:                    # ¿A QUÉ recurso le hace autoescalado?
+  scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: msvc-auth                  # Apunta al Deployment "msvc-auth" — debe coincidir EXACTO
-                                      # con metadata.name de auth-deployment.yaml
-  minReplicas: 1                     # Nunca va a bajar de 1 Pod, sin importar qué tan baja sea la carga
-  maxReplicas: 3                     # Nunca va a subir de 3 Pods, sin importar qué tan alta sea la carga
-                                      # (límite para no agotar los recursos del cluster/nodos)
+    name: msvc-auth
+  minReplicas: 1
+  maxReplicas: 3
   metrics:
-    - type: Resource                 # La métrica a vigilar es un "Resource" nativo de k8s (CPU/memoria)
+    - type: Resource
       resource:
-        name: cpu                    # Específicamente, uso de CPU
+        name: cpu
         target:
-          type: Utilization           # "Utilization" = porcentaje respecto al "requests.cpu" del Pod
-          averageUtilization: 50      # Si el promedio de CPU usado por TODOS los Pods de msvc-auth
-                                       # supera el 50% de su "requests.cpu" (200m, según auth-deployment.yaml),
-                                       # el HPA crea un Pod adicional. Si baja bien por debajo de 50%
-                                       # sostenidamente, elimina réplicas (sin bajar de minReplicas)
+          type: Utilization
+          averageUtilization: 50
