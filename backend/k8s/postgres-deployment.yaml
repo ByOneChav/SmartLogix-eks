@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres      # nombre del deployment
+  name: postgres          # nombre del deployment
 spec:
-  replicas: 1     # solo 1 replica — PostgreSQL no escala horizontalmente fácil
+  replicas: 1             # solo 1 replica - PostgreSQL no escala horizontalmente fácil
   selector:
     matchLabels:
-      app: postgres  # busca pods con esta etiqueta
-  template:         # plantilla para crear los pods
+      app: postgres       # busca pods con esta etiqueta
+  template:               # plantilla para crear los pods
     metadata:
       labels:
-        app: postgres  # etiqueta del pod — debe coincidir con selector
+        app: postgres     # etiqueta del pod - debe coincidir con selector
     spec:
       containers:
         - name: postgres
@@ -19,16 +19,22 @@ spec:
             - containerPort: 5432
           envFrom:
             - secretRef:
-                name: postgres-secret   # inyecta POSTGRES_USER y POSTGRES_PASSWORD como env vars archivo secret
+                name: postgres-secret  # inyecta POSTGRES_USER y POSTGRES_PASSWORD como env vars archivo secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
             - name: init-script
-              mountPath: /docker-entrypoint-initdb.d   # PostgreSQL ejecuta todo .sql aquí al arrancar
+              mountPath: /docker-entrypoint-initdb.d    # PostgreSQL ejecuta todo .sql aquí al arrancar
       volumes:
         - name: postgres-data
           emptyDir: {}
         - name: init-script
           configMap:
-            name: postgres-init        # monta el ConfigMap como archivo
-
+            name: postgres-init       # monta el ConfigMap como archivo
