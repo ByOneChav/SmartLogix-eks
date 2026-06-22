@@ -12,9 +12,7 @@ env:
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
 
 jobs:
-  # ============================================
   # JOB 1: Build de imágenes y push a ECR
-  # ============================================
   build-and-push:
     runs-on: ubuntu-latest
     strategy:
@@ -75,9 +73,7 @@ jobs:
             ${{ env.ECR_REGISTRY }}/smartlogix/${{ matrix.service }}:latest
             ${{ env.ECR_REGISTRY }}/smartlogix/${{ matrix.service }}:${{ github.sha }}
 
-  # ============================================
   # JOB 2: Deploy a EKS
-  # ============================================
   deploy:
     needs: build-and-push       # espera a que todas las imágenes se suban
     runs-on: ubuntu-latest
