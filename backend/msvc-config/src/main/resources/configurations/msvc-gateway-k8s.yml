@@ -28,3 +28,20 @@ eureka:
 app:
   cors:
     allowed-origins: "*"
+    
+# agregue eso
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Auth
+        url: /api/auth/v3/api-docs
+
+      - name: Pedido
+        url: /api/pedido/v3/api-docs
+
+      - name: Inventario
+        url: /api/inventario/v3/api-docs
+
+      - name: Envio
+        url: /api/envio/v3/api-docs
