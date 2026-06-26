@@ -27,30 +27,30 @@ spring:
         - id: swagger-auth
           uri: http://msvc-auth:8081
           predicates:
-            - Path=/swagger/auth/swagger-ui/**,/swagger/auth/v3/api-docs/**
+            - Path=/swagger/auth/**
           filters:
-            - RewritePath=/swagger/auth/(?<segment>.*), /${segment}
+            - StripPrefix=2
 
         - id: swagger-inventario
           uri: http://msvc-inventario:8083
           predicates:
-            - Path=/swagger/inventario/swagger-ui/**,/swagger/inventario/v3/api-docs/**
+            - Path=/swagger/inventario/**
           filters:
-            - RewritePath=/swagger/inventario/(?<segment>.*), /${segment}
+            - StripPrefix=2
 
         - id: swagger-pedido
           uri: http://msvc-pedido:8082
           predicates:
-            - Path=/swagger/pedido/swagger-ui/**,/swagger/pedido/v3/api-docs/**
+            - Path=/swagger/pedido/**
           filters:
-            - RewritePath=/swagger/pedido/(?<segment>.*), /${segment}
+            - StripPrefix=2
 
         - id: swagger-envio
           uri: http://msvc-envio:8084
           predicates:
-            - Path=/swagger/envio/swagger-ui/**,/swagger/envio/v3/api-docs/**
+            - Path=/swagger/envio/**
           filters:
-            - RewritePath=/swagger/envio/(?<segment>.*), /${segment}
+            - StripPrefix=2
 
 # ... resto igual (eureka, app.cors)
 
