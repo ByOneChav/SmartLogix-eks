@@ -179,4 +179,9 @@ jobs:
           kubectl get hpa
           echo "=== FRONTEND URL ==="
           kubectl get svc frontend -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+# http://a89667c0fa57949db96ac7316657d2ca-1585154752.us-east-1.elb.amazonaws.com/swagger/auth/v3/api-docs
+# http://a89667c0fa57949db96ac7316657d2ca-1585154752.us-east-1.elb.amazonaws.com/swagger/inventario/v3/api-docs
+# http://a89667c0fa57949db96ac7316657d2ca-1585154752.us-east-1.elb.amazonaws.com/swagger/pedido/v3/api-docs
+# http://a89667c0fa57949db96ac7316657d2ca-1585154752.us-east-1.elb.amazonaws.com/swagger/envio/v3/api-docs
           
