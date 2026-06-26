@@ -23,8 +23,12 @@ export const routes: Routes = [
     ]
   },
   { path: '',   redirectTo: '/login', pathMatch: 'full' },
-    // ← AGREGAR ESTO — rutas que Angular debe dejar pasar al servidor
-  { path: 'swagger/**', redirectTo: '/swagger/' },
+      // ← AGREGAR ANTES del path '**'
+  { path: 'swagger',           redirectTo: '/swagger' },
+  { path: 'swagger/auth',      redirectTo: '/swagger/auth' },
+  { path: 'swagger/inventario', redirectTo: '/swagger/inventario' },
+  { path: 'swagger/pedido',    redirectTo: '/swagger/pedido' },
+  { path: 'swagger/envio',     redirectTo: '/swagger/envio' },
   { path: '**', redirectTo: '/login' },
   
 ];
