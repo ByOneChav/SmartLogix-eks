@@ -2,22 +2,57 @@ spring:
   cloud:
     gateway:
       routes:
+        # ── Rutas existentes ──────────────────────────────
         - id: authService
           uri: http://msvc-auth:8081
           predicates:
             - Path=/api/auth/**
+
         - id: pedido
           uri: http://msvc-pedido:8082
           predicates:
             - Path=/api/pedido/**
+
         - id: inventario
           uri: http://msvc-inventario:8083
           predicates:
             - Path=/api/inventario/**
+
         - id: envio
           uri: http://msvc-envio:8084
           predicates:
             - Path=/api/envio/**
+
+        # ── Swagger por microservicio ─────────────────────
+        - id: swagger-auth
+          uri: http://msvc-auth:8081
+          predicates:
+            - Path=/swagger/auth/swagger-ui/**,/swagger/auth/v3/api-docs/**
+          filters:
+            - RewritePath=/swagger/auth/(?<segment>.*), /${segment}
+
+        - id: swagger-inventario
+          uri: http://msvc-inventario:8083
+          predicates:
+            - Path=/swagger/inventario/swagger-ui/**,/swagger/inventario/v3/api-docs/**
+          filters:
+            - RewritePath=/swagger/inventario/(?<segment>.*), /${segment}
+
+        - id: swagger-pedido
+          uri: http://msvc-pedido:8082
+          predicates:
+            - Path=/swagger/pedido/swagger-ui/**,/swagger/pedido/v3/api-docs/**
+          filters:
+            - RewritePath=/swagger/pedido/(?<segment>.*), /${segment}
+
+        - id: swagger-envio
+          uri: http://msvc-envio:8084
+          predicates:
+            - Path=/swagger/envio/swagger-ui/**,/swagger/envio/v3/api-docs/**
+          filters:
+            - RewritePath=/swagger/envio/(?<segment>.*), /${segment}
+
+# ... resto igual (eureka, app.cors)
 
 eureka:
   client:
