@@ -24,12 +24,12 @@ export const routes: Routes = [
   },
   { path: '',   redirectTo: '/login', pathMatch: 'full' },
       // ← AGREGAR ANTES del path '**'
-  { path: 'swagger',           redirectTo: '/swagger' },
-  { path: 'swagger/auth',      redirectTo: '/swagger/auth' },
-  { path: 'swagger/inventario', redirectTo: '/swagger/inventario' },
-  { path: 'swagger/pedido',    redirectTo: '/swagger/pedido' },
-  { path: 'swagger/envio',     redirectTo: '/swagger/envio' },
-  { path: '**', redirectTo: '/login' },
+  // { path: 'swagger',           redirectTo: '/swagger' },
+  // { path: 'swagger/auth',      redirectTo: '/swagger/auth' },
+  // { path: 'swagger/inventario', redirectTo: '/swagger/inventario' },
+  // { path: 'swagger/pedido',    redirectTo: '/swagger/pedido' },
+  // { path: 'swagger/envio',     redirectTo: '/swagger/envio' },
+  { path: '**', redirectTo: '/login' }
   
 ];
 
