@@ -5,3 +5,8 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+
+springdoc:
+  swagger-ui:
+    url: /v3/api-docs
+    disable-swagger-default-url: true

@@ -19,7 +19,7 @@ public class SwaggerConfig {
 		return new OpenAPI()
 
 				// ANTES
-				// .addServersItem(new Server().url("http://localhost:8080"))
+				.addServersItem(new Server().url("http://localhost:8080"))
 
 				// DESPUÉS
 				.addServersItem(new Server().url(
